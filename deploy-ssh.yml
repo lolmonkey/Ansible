@@ -1,0 +1,33 @@
+---
+ - hosts: all
+   vars:
+     - provision_password: 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86'
+   remote_user: root
+
+   tasks:
+   - name: Add ansible group
+     group:
+       name: ansible
+       state: present
+
+   - name: Add a new user named ansible
+     user:
+         name=farhan
+         groups=ansible
+         append=yes
+         state=present
+         createhome=yes
+         password= {{ provision_password }}
+
+   - name: Add ansible user to the sudoers
+     lineinfile:
+       dest: /etc/sudoers
+       regexp: ^%ansible'
+       line: '%ansible ALL=(ALL) NOPASSWD: ALL'
+       validate: 'visudo -cf %s'
+
+   - name: DEploy SSH Key
+     authorized_key: user=farhan
+                     key="{{ lookup('file', '/home/farhan/.ssh/id_rsa.pub') }}"
+
+
